@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  geo:
+    build: .
+    environment:
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_USER: ${DB_USER}
+      DB_NAME: ${DB_NAME}
+      DB_PORT: ${DB_PORT}
+      DB_HOST: ${DB_HOST}
+    networks:
+      - nginx_mylocal
+      - mylocal
+    deploy:
+      replicas: 3
+    depends_on:
+      - redisgeo
+      - dbgeo
+  dbgeo:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+#    volumes:
+#      - ./.database/postgres/data:/var/lib/postgresql/data
+    networks:
+      - mylocal
+  redisgeo:
+    image: redis:7.0.2-alpine
+    networks:
+      - mylocal
+  nginx:
+    image: nginx:1.16.0-alpine
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - nginx_mylocal
+networks:
+  mylocal:
+    driver: bridge
+  nginx_mylocal:
+    external: true
